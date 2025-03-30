@@ -5,7 +5,7 @@ class ETicketInterface extends StatelessWidget {
   // Accept ticket information via a Map
   final Map<String, String> ticketData;
 
-  const ETicketInterface({Key? key, required this.ticketData}) : super(key: key);
+  const ETicketInterface({super.key, required this.ticketData});
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +36,8 @@ class ETicketInterface extends StatelessWidget {
                 borderRadius: BorderRadius.circular(15),
               ),
               child: ListTile(
-                leading: const Icon(Icons.flight_takeoff, color: Colors.redAccent),
+                leading:
+                    const Icon(Icons.flight_takeoff, color: Colors.redAccent),
                 title: Text('From: ${ticketData['from'] ?? 'Unknown'}'),
                 subtitle: Text('To: ${ticketData['to'] ?? 'Unknown'}'),
               ),

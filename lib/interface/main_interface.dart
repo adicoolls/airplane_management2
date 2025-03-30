@@ -1,77 +1,13 @@
-
-// import 'package:airplane_management/custom_widgets.dart';
-// import 'package:flutter/material.dart';
-// import 'results_interface.dart';
-// import 'flight_check_interface.dart';
-// import 'user_profile_interface.dart';
-// import '../../widgets/custom_widgets.dart'; // Import the custom widgets
-
-// class MainInterface extends StatelessWidget {
-//   final TextEditingController _fromController = TextEditingController();
-//   final TextEditingController _toController = TextEditingController();
-//   final TextEditingController _dateController = TextEditingController();
-
-// ignore_for_file: camel_case_types
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('SkyFly ✈️', style: TextStyle(fontWeight: FontWeight.bold)),
-//         centerTitle: true,
-//         backgroundColor: const Color.fromARGB(255, 58, 1, 94),
-//         actions: [
-//           IconButton(
-//             icon: const Icon(Icons.person, color: Colors.white),
-//             onPressed: () {
-//               Navigator.pushNamed(context, '/userProfile');
-//             },
-//           ),
-//         ],
-//       ),
-//       body: SingleChildScrollView(
-//         child: Padding(
-//           padding: const EdgeInsets.all(16.0),
-//           child: Column(
-//             children: [
-//               TextField(
-//                 controller: _fromController,
-//                 decoration: InputDecoration(labelText: 'From'),
-//               ),
-//               TextField(
-//                 controller: _toController,
-//                 decoration: InputDecoration(labelText: 'To'),
-//               ),
-//               TextField(
-//                 controller: _dateController,
-//                 decoration: InputDecoration(labelText: 'Date'),
-//               ),
-//               ElevatedButton(
-//                 onPressed: () {
-//                   Navigator.push(
-//                     context,
-//                     MaterialPageRoute(
-//                       builder: (context) => ResultsInterface(
-//                         from: _fromController.text,
-//                         to: _toController.text,
-//                       ),
-//                     ),
-//                   );
-//                 },
-//                 child: Text('Search Flights'),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
+import 'package:airplane_management/bloc/airplane_bloc.dart';
+import 'package:airplane_management/bloc/airplane_state.dart';
 import 'package:airplane_management/custom_widgets.dart';
+import 'package:airplane_management/models/airplane_model.dart';
 import 'package:flutter/material.dart';
-import 'custom_design.dart'; // Make sure the file is in the same folder
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class MainInterface extends StatefulWidget {
+  const MainInterface({super.key});
+
   @override
   State<MainInterface> createState() => _MainInterfaceState();
 }
@@ -80,9 +16,6 @@ class _MainInterfaceState extends State<MainInterface> {
   final TextEditingController _fromController = TextEditingController();
   final TextEditingController _toController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
-
-  // List of cities for dropdown
-  final List<String> cities = ['Mumbai', 'Delhi', 'Bangalore', 'Pune', 'Chennai'];
 
   // Dropdown selected variables
   String? fromCity;
@@ -93,154 +26,234 @@ class _MainInterfaceState extends State<MainInterface> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('SkyFly ✈️'),
-        centerTitle: true,
-        backgroundColor: Colors.purple[800],
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person, color: Colors.white),
-            onPressed: () {
-              Navigator.pushNamed(context, '/userProfile');
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: [
-              // Search Section / Hero Section
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.purple[800]!, Colors.redAccent],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  children: [
-                    const Text(
-                      'What flight are you looking for? ✈️',
-                      style: TextStyle(
-                        fontSize: 24,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
+    return BlocProvider(
+      create: (context) => AirplaneCubit()..fetchAirplaneData(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('SkyFly ✈️'),
+          centerTitle: true,
+          backgroundColor: Colors.purple[800],
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.person, color: Colors.white),
+              onPressed: () {
+                Navigator.pushNamed(context, '/userProfile');
+              },
+            ),
+          ],
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                // Search Section / Hero Section
+                BlocBuilder<AirplaneCubit, AirplaneState>(
+                  builder: (context, state) {
+                    if (state is AirplaneLoading) {
+                      return CircularProgressIndicator.adaptive();
+                    }
+                    if (state is AirplaneLoaded) {
+                      final AirplaneModel? airplaneModel = state.airplaneModel;
 
-                    // From Dropdown
-                    DropdownButtonFormField<String>(
-                      value: fromCity,
-                      hint: const Text('From'),
-                      items: cities.map((city) {
-                        return DropdownMenuItem(
-                          value: city,
-                          child: Text(city),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          fromCity = value;
-                        });
-                      },
-                    ),
+                      // Create sets to store unique airports
+                      final Set<String> uniqueDepartures = {};
+                      final Set<String> uniqueArrivals = {};
 
-                    const SizedBox(height: 15),
+                      // Create departure and arrival items first
+                      final departureItems =
+                          airplaneModel?.data.where((airport) {
+                                final airportCode =
+                                    "${airport.departure?.airport}_${airport.departure?.iata}";
+                                return uniqueDepartures.add(airportCode);
+                              }).map((airport) {
+                                final airportCode =
+                                    "${airport.departure?.airport}_${airport.departure?.iata}";
+                                return DropdownMenuItem(
+                                  value: airportCode,
+                                  child: Text(
+                                    "${airport.departure?.airport} (${airport.departure?.iata})",
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                );
+                              }).toList() ??
+                              [];
 
-                    // To Dropdown
-                    DropdownButtonFormField<String>(
-                      value: toCity,
-                      hint: const Text('To'),
-                      items: cities.map((city) {
-                        return DropdownMenuItem(
-                          value: city,
-                          child: Text(city),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          toCity = value;
-                        });
-                      },
-                    ),
+                      final arrivalItems = airplaneModel?.data.where((airport) {
+                            final airportCode =
+                                "${airport.arrival?.airport}_${airport.arrival?.iata}";
+                            return uniqueArrivals.add(airportCode);
+                          }).map((airport) {
+                            final airportCode =
+                                "${airport.arrival?.airport}_${airport.arrival?.iata}";
+                            return DropdownMenuItem(
+                              value: airportCode,
+                              child: Text(
+                                "${airport.arrival?.airport} (${airport.arrival?.iata})",
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            );
+                          }).toList() ??
+                          [];
 
-                    const SizedBox(height: 15),
+                      // Check if current values exist in the new items
+                      if (fromCity != null &&
+                          !uniqueDepartures.contains(fromCity)) {
+                        fromCity = null;
+                      }
+                      if (toCity != null && !uniqueArrivals.contains(toCity)) {
+                        toCity = null;
+                      }
 
-                    // Date Picker
-                    InkWell(
-                      onTap: () async {
-                        DateTime today = DateTime.now();
-                        DateTime? pickedDate = await showDatePicker(
-                          context: context,
-                          initialDate: today.add(const Duration(days: 1)),
-                          firstDate: today.add(const Duration(days: 1)),
-                          lastDate: DateTime(today.year + 25),
-                        );
-                        if (pickedDate != null) {
-                          setState(() {
-                            selectedDate = pickedDate;
-                          });
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                      return Container(
+                        padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(8),
+                          gradient: LinearGradient(
+                            colors: [Colors.purple[800]!, Colors.redAccent],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        child: Column(
                           children: [
-                            Text(
-                              selectedDate == null
-                                  ? 'Select Date'
-                                  : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
-                              style: const TextStyle(fontSize: 16),
+                            const Text(
+                              'What flight are you looking for? ✈️',
+                              style: TextStyle(
+                                fontSize: 24,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                            const Icon(Icons.calendar_today),
+                            const SizedBox(height: 20),
+
+                            // From Dropdown
+                            DropdownButtonFormField<String>(
+                              value: fromCity,
+                              hint: const Text('From'),
+                              isExpanded: true,
+                              items: departureItems,
+                              onChanged: (value) {
+                                setState(() {
+                                  fromCity = value;
+                                });
+                              },
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                              ),
+                            ),
+
+                            const SizedBox(height: 15),
+
+                            // To Dropdown
+                            DropdownButtonFormField<String>(
+                              value: toCity,
+                              hint: const Text('To'),
+                              isExpanded: true,
+                              items: arrivalItems,
+                              onChanged: (value) {
+                                setState(() {
+                                  toCity = value;
+                                });
+                              },
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                              ),
+                            ),
+
+                            const SizedBox(height: 15),
+
+                            // Date Picker
+                            InkWell(
+                              onTap: () async {
+                                DateTime today = DateTime.now();
+                                DateTime? pickedDate = await showDatePicker(
+                                  context: context,
+                                  initialDate:
+                                      today.add(const Duration(days: 1)),
+                                  firstDate: today.add(const Duration(days: 1)),
+                                  lastDate: DateTime(today.year + 25),
+                                );
+                                setState(() {
+                                  selectedDate = pickedDate;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 16, horizontal: 12),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.grey),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      selectedDate == null
+                                          ? 'Select Date'
+                                          : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                    const Icon(Icons.calendar_today),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 25),
+
+                            // Search Button
+                            buildSearchButton(
+                              context,
+                              fromCity.toString(),
+                              toCity.toString(),
+                              selectedDate.toString(),
+                            ),
                           ],
                         ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 25),
-
-                    // Search Button
-                    buildSearchButton(
-                      context,
-                      _fromController,
-                      _toController,
-                      _dateController,
-                    ),
-                  ],
+                      );
+                    }
+                    if (state is AirplaneError) {
+                      return Center(
+                        child: Text(state.errorMessage.toString()),
+                      );
+                    }
+                    return SizedBox();
+                  },
                 ),
-              ),
 
-              const SizedBox(height: 30),
+                const SizedBox(height: 30),
 
-              // Featured Flight Deals Carousel
-              _buildFeaturedDealsCarousel(context),
+                // Featured Flight Deals Carousel
+                _buildFeaturedDealsCarousel(context),
 
-              const SizedBox(height: 30),
+                const SizedBox(height: 30),
 
-              // Additional Options Section
-              buildAdditionalOptions(),
-            ],
+                // Additional Options Section
+                buildAdditionalOptions(),
+              ],
+            ),
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.pushNamed(context, '/flightCheck'),
-        backgroundColor: Colors.redAccent,
-        child: const Icon(Icons.airplanemode_active, color: Colors.white),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => Navigator.pushNamed(context, '/flightCheck'),
+          backgroundColor: Colors.redAccent,
+          child: const Icon(Icons.airplanemode_active, color: Colors.white),
+        ),
       ),
     );
   }

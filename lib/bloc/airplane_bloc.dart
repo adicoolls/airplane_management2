@@ -6,16 +6,16 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AirplaneCubit extends Cubit<AirplaneState> {
-  AirplaneCubit() : super(AirplaneLoading());
-  Dio _dio = Dio();
+  AirplaneCubit() : super(AirplaneInitial());
+  final Dio _dio = Dio();
 
   Future<void> fetchAirplaneData() async {
     try {
-      Response response = await _dio.get('https://api.aviationstack.com/v1/flights?access_key=61f50e151083003b80a3ceba346bed78');
+      emit(AirplaneLoading());
+      Response response = await _dio.get(
+          'https://api.aviationstack.com/v1/flights?access_key=61f50e151083003b80a3ceba346bed78');
       if (response.statusCode == 200) {
-        // Assuming the response data is in the format of AirplaneModel
         AirplaneModel airplaneModel = AirplaneModel.fromJson(response.data);
-        log("responce data:${airplaneModel.data[0].airline?.name}");
         emit(AirplaneLoaded(airplaneModel: airplaneModel));
       } else {
         emit(AirplaneError(errorMessage: 'Failed to load data'));

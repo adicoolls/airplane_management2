@@ -10,6 +10,8 @@ import 'interface/user_profile_interface.dart';
 void main() => runApp(TicketBookingApp());
 
 class TicketBookingApp extends StatelessWidget {
+  const TicketBookingApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -22,15 +24,15 @@ class TicketBookingApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.grey[100],
         fontFamily: 'Poppins',
       ),
-      home: Practice(),
-
+      home: MainInterface(),
       routes: {
         '/results': (context) => ResultsInterface(from: "mumbai", to: "delhi"),
         '/flightCheck': (context) => FlightCheckInterface(),
         '/userProfile': (context) => UserProfileInterface(),
         '/offers': (context) => OffersCouponsInterface(),
-  '/eticket': (context) => ETicketInterface(ticketData: const {}), // You may need to adjust this
-  '/mainInterface': (context) => MainInterface(),
+        '/eticket': (context) => ETicketInterface(
+            ticketData: const {}), // You may need to adjust this
+        '/mainInterface': (context) => MainInterface(),
       },
     );
   }

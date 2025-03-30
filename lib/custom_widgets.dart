@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 
 Widget buildInputField({
@@ -45,7 +47,8 @@ Widget buildDatePicker(BuildContext context, TextEditingController controller) {
         lastDate: DateTime(2025),
       );
       if (pickedDate != null) {
-        controller.text = "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+        controller.text =
+            "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
       }
     },
   );
@@ -53,29 +56,32 @@ Widget buildDatePicker(BuildContext context, TextEditingController controller) {
 
 Widget buildSearchButton(
   BuildContext context,
-  TextEditingController fromController,
-  TextEditingController toController,
-  TextEditingController dateController,
+  String fromController,
+  String toController,
+  String dateController,
 ) {
   return ElevatedButton.icon(
     onPressed: () {
-      
-      if (fromController.text.isNotEmpty &&
-          toController.text.isNotEmpty &&
-          dateController.text.isNotEmpty) {
+      log('from : $fromController');
+      log('to : $toController');
+      log('date : $dateController');
+      if (fromController.isNotEmpty &&
+          toController.isNotEmpty &&
+          dateController.isNotEmpty) {
         Navigator.pushNamed(
           context,
           '/results',
           arguments: {
-            'from': fromController.text,
-            'to': toController.text,
-            'date': dateController.text,
+            'from': fromController,
+            'to': toController,
+            'date': dateController,
           },
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Please fill all fields!', style: TextStyle(color: Colors.white)),
+            content: Text('Please fill all fields!',
+                style: TextStyle(color: Colors.white)),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -131,7 +137,8 @@ Widget buildAdditionalOptions() {
             const Spacer(),
             TextButton(
               onPressed: () {},
-              child: const Text('CLAIM NOW', style: TextStyle(color: Colors.purple)),
+              child: const Text('CLAIM NOW',
+                  style: TextStyle(color: Colors.purple)),
             ),
           ],
         ),
