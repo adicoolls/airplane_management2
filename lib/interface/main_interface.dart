@@ -13,9 +13,9 @@ class MainInterface extends StatefulWidget {
 }
 
 class _MainInterfaceState extends State<MainInterface> {
-  final TextEditingController _fromController = TextEditingController();
-  final TextEditingController _toController = TextEditingController();
-  final TextEditingController _dateController = TextEditingController();
+  // final TextEditingController _fromController = TextEditingController();
+  // final TextEditingController _toController = TextEditingController();
+  // final TextEditingController _dateController = TextEditingController();
 
   // Dropdown selected variables
   String? fromCity;

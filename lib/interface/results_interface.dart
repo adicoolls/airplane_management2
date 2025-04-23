@@ -1,13 +1,11 @@
-
 import 'package:airplane_management/e_ticket_interface.dart';
 import 'package:flutter/material.dart';
-import 'e_ticket_interface.dart';
 
 class ResultsInterface extends StatelessWidget {
   final String from;
   final String to;
 
-  ResultsInterface({required this.from, required this.to});
+  const ResultsInterface({super.key, required this.from, required this.to});
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +36,8 @@ class ResultsInterface extends StatelessWidget {
             child: ListTile(
               leading: const Icon(Icons.flight, color: Colors.redAccent),
               title: Text(flightNames[index]),
-              subtitle: Text('Departure: ${departureTime.format(context)} | Price: \$$price'),
+              subtitle: Text(
+                  'Departure: ${departureTime.format(context)} | Price: \$$price'),
               trailing: const Icon(Icons.arrow_forward, color: Colors.purple),
               onTap: () {
                 // Create a sample ticket data map.
@@ -57,7 +56,8 @@ class ResultsInterface extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ETicketInterface(ticketData: ticketData),
+                    builder: (context) =>
+                        ETicketInterface(ticketData: ticketData),
                   ),
                 );
               },

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "33187235126",
+    "project_id": "airplane-management-1ce20",
+    "storage_bucket": "airplane-management-1ce20.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:33187235126:android:679d47e5bfeb520e811f97",
+        "android_client_info": {
+          "package_name": "com.example.airplane_management"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdjtygUyY8sraEaTP924GmBRlZYlRfrak"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

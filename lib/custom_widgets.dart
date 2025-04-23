@@ -55,46 +55,40 @@ Widget buildDatePicker(BuildContext context, TextEditingController controller) {
 }
 
 Widget buildSearchButton(
-  BuildContext context,
-  String fromController,
-  String toController,
-  String dateController,
-) {
-  return ElevatedButton.icon(
+    BuildContext context, String from, String to, String date) {
+  return ElevatedButton(
     onPressed: () {
-      log('from : $fromController');
-      log('to : $toController');
-      log('date : $dateController');
-      if (fromController.isNotEmpty &&
-          toController.isNotEmpty &&
-          dateController.isNotEmpty) {
+      if (from != "null" && to != "null") {
+        // Check if values are selected
         Navigator.pushNamed(
           context,
           '/results',
           arguments: {
-            'from': fromController,
-            'to': toController,
-            'date': dateController,
+            'fromCity':
+                from.split('_')[0], // Get airport name without IATA code
+            'toCity': to.split('_')[0], // Get airport name without IATA code
           },
         );
       } else {
+        // Show error message if no cities are selected
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Please fill all fields!',
-                style: TextStyle(color: Colors.white)),
-            backgroundColor: Colors.redAccent,
+            content: Text('Please select both departure and arrival cities'),
+            backgroundColor: Colors.red,
           ),
         );
       }
     },
-    icon: const Icon(Icons.search, color: Colors.white),
-    label: const Text('Search Flights', style: TextStyle(color: Colors.white)),
     style: ElevatedButton.styleFrom(
       backgroundColor: Colors.redAccent,
-      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(30),
       ),
+    ),
+    child: const Text(
+      'Search Flights',
+      style: TextStyle(fontSize: 18, color: Colors.white),
     ),
   );
 }

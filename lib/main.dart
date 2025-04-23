@@ -2,11 +2,16 @@ import 'package:airplane_management/e_ticket_interface.dart';
 import 'package:airplane_management/interface/results_interface.dart';
 import 'package:airplane_management/offers_coupons_interface.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'interface/main_interface.dart';
 import 'interface/flight_check_interface.dart';
 import 'interface/user_profile_interface.dart';
 
-void main() => runApp(TicketBookingApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(TicketBookingApp());
+}
 
 class TicketBookingApp extends StatelessWidget {
   const TicketBookingApp({super.key});
@@ -14,6 +19,7 @@ class TicketBookingApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'SkyFly - Ticket Booking',
       theme: ThemeData(
         primaryColor: Colors.purple[800],
@@ -26,8 +32,12 @@ class TicketBookingApp extends StatelessWidget {
       home: UserProfileInterface(),
       routes: {
         '/results': (context) {
-          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-          return ResultsInterface(from: args['fromCity'], to: args['toCity']);
+          final args = ModalRoute.of(context)!.settings.arguments
+              as Map<String, dynamic>?;
+          return ResultsInterface(
+            from: args?['fromCity'] ?? 'Unknown',
+            to: args?['toCity'] ?? 'Unknown',
+          );
         },
         '/flightCheck': (context) => FlightCheckInterface(),
         '/userProfile': (context) => UserProfileInterface(),
