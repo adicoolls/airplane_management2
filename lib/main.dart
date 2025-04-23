@@ -1,7 +1,6 @@
 import 'package:airplane_management/e_ticket_interface.dart';
 import 'package:airplane_management/interface/results_interface.dart';
 import 'package:airplane_management/offers_coupons_interface.dart';
-import 'package:airplane_management/pages/practice.dart';
 import 'package:flutter/material.dart';
 import 'interface/main_interface.dart';
 import 'interface/flight_check_interface.dart';
@@ -24,9 +23,12 @@ class TicketBookingApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.grey[100],
         fontFamily: 'Poppins',
       ),
-      home: MainInterface(),
+      home: UserProfileInterface(),
       routes: {
-        '/results': (context) => ResultsInterface(from: "mumbai", to: "delhi"),
+        '/results': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          return ResultsInterface(from: args['fromCity'], to: args['toCity']);
+        },
         '/flightCheck': (context) => FlightCheckInterface(),
         '/userProfile': (context) => UserProfileInterface(),
         '/offers': (context) => OffersCouponsInterface(),
