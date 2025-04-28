@@ -1,6 +1,8 @@
+import 'dart:developer';
+
 import 'package:airplane_management/bloc/airplane_bloc.dart';
 import 'package:airplane_management/bloc/airplane_state.dart';
-import 'package:airplane_management/custom_widgets.dart';
+import 'package:airplane_management/widgets/custom_widgets.dart';
 import 'package:airplane_management/models/airplane_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -63,16 +65,20 @@ class _MainInterfaceState extends State<MainInterface> {
                       // Create departure and arrival items first
                       final departureItems =
                           airplaneModel?.data.where((airport) {
-                                final airportCode =
-                                    "${airport.departure?.airport}_${airport.departure?.iata}";
-                                return uniqueDepartures.add(airportCode);
+                                final airportName =
+                                    airport.departure?.airport ?? '';
+                                return airportName.isNotEmpty &&
+                                    !uniqueDepartures.contains(airportName);
                               }).map((airport) {
-                                final airportCode =
-                                    "${airport.departure?.airport}_${airport.departure?.iata}";
+                                final airportName =
+                                    airport.departure?.airport ?? '';
+                                final iata = airport.departure?.iata ?? '';
+                                final value = '${airportName}_$iata';
+                                uniqueDepartures.add(airportName);
                                 return DropdownMenuItem(
-                                  value: airportCode,
+                                  value: value,
                                   child: Text(
-                                    "${airport.departure?.airport} (${airport.departure?.iata})",
+                                    '$airportName (${airport.departure?.iata ?? 'N/A'})',
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 );
@@ -80,16 +86,18 @@ class _MainInterfaceState extends State<MainInterface> {
                               [];
 
                       final arrivalItems = airplaneModel?.data.where((airport) {
-                            final airportCode =
-                                "${airport.arrival?.airport}_${airport.arrival?.iata}";
-                            return uniqueArrivals.add(airportCode);
+                            final airportName = airport.arrival?.airport ?? '';
+                            return airportName.isNotEmpty &&
+                                !uniqueArrivals.contains(airportName);
                           }).map((airport) {
-                            final airportCode =
-                                "${airport.arrival?.airport}_${airport.arrival?.iata}";
+                            final airportName = airport.arrival?.airport ?? '';
+                            final iata = airport.arrival?.iata ?? '';
+                            final value = '${airportName}_$iata';
+                            uniqueArrivals.add(airportName);
                             return DropdownMenuItem(
-                              value: airportCode,
+                              value: value,
                               child: Text(
-                                "${airport.arrival?.airport} (${airport.arrival?.iata})",
+                                '$airportName (${airport.arrival?.iata ?? 'N/A'})',
                                 overflow: TextOverflow.ellipsis,
                               ),
                             );
@@ -97,13 +105,13 @@ class _MainInterfaceState extends State<MainInterface> {
                           [];
 
                       // Check if current values exist in the new items
-                      if (fromCity != null &&
-                          !uniqueDepartures.contains(fromCity)) {
-                        fromCity = null;
-                      }
-                      if (toCity != null && !uniqueArrivals.contains(toCity)) {
-                        toCity = null;
-                      }
+                      // if (fromCity != null &&
+                      //     !uniqueDepartures.contains(fromCity)) {
+                      //   fromCity = null;
+                      // }
+                      // if (toCity != null && !uniqueArrivals.contains(toCity)) {
+                      //   toCity = null;
+                      // }
 
                       return Container(
                         padding: const EdgeInsets.all(20),
@@ -137,6 +145,7 @@ class _MainInterfaceState extends State<MainInterface> {
                               onChanged: (value) {
                                 setState(() {
                                   fromCity = value;
+                                  log('Selected fromCity: $value'); // Add debug logging
                                 });
                               },
                               decoration: InputDecoration(
@@ -161,6 +170,7 @@ class _MainInterfaceState extends State<MainInterface> {
                               onChanged: (value) {
                                 setState(() {
                                   toCity = value;
+                                  log('Selected toCity: $toCity'); // Add debug logging
                                 });
                               },
                               decoration: InputDecoration(
@@ -219,9 +229,10 @@ class _MainInterfaceState extends State<MainInterface> {
                             // Search Button
                             buildSearchButton(
                               context,
-                              fromCity.toString(),
-                              toCity.toString(),
-                              selectedDate.toString(),
+                              from: fromCity ??
+                                  '', // Keep the value with IATA code
+                              to: toCity ?? '', // Keep the value with IATA code
+                              date: selectedDate?.toString() ?? '',
                             ),
                           ],
                         ),

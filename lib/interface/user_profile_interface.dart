@@ -34,7 +34,7 @@ class _UserProfileInterfaceState extends State<UserProfileInterface> {
       builder: (context, snapshot) {
         return Scaffold(
           appBar: AppBar(
-            automaticallyImplyLeading: false,
+            automaticallyImplyLeading: true,
             title: const Text(
               'User Profile',
               style: TextStyle(
