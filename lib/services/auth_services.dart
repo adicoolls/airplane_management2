@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -37,7 +38,7 @@ class AuthService {
   }
 }
 
-import 'package:http/http.dart' as http;
+
 
 class FlightApiService {
   final String baseUrl = 'your_api_base_url'; // Replace with your actual API base URL
