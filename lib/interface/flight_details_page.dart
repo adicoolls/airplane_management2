@@ -1,3 +1,4 @@
+import 'package:airplane_management/interface/qr_interface.dart';
 import 'package:airplane_management/models/airplane_model.dart';
 import 'package:flutter/material.dart';
 
@@ -132,11 +133,11 @@ class FlightDetailsPage extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // TODO: Implement booking functionality
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Booking functionality coming soon!'),
-                      backgroundColor: Colors.purple,
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          FlightQRPageInterface(flight: flight),
                     ),
                   );
                 },

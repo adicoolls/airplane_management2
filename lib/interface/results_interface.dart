@@ -195,9 +195,13 @@ class ResultsInterface extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          airport,
-          style: const TextStyle(fontSize: 16),
+        SizedBox(
+          width: 120, // Adjust width as needed
+          child: Text(
+            airport,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 16),
+          ),
         ),
         Text(
           'Terminal $terminal',
