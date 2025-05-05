@@ -1,6 +1,7 @@
 import 'package:airplane_management/interface/qr_interface.dart';
 import 'package:airplane_management/models/airplane_model.dart';
 import 'package:flutter/material.dart';
+import '../services/booking_service.dart';
 
 class FlightDetailsPage extends StatelessWidget {
   final Datum flight;
@@ -132,14 +133,19 @@ class FlightDetailsPage extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          FlightQRPageInterface(flight: flight),
-                    ),
-                  );
+                onPressed: () async {
+                  final bookingService = BookingService();
+                  await bookingService.saveFlightBooking(flight);
+
+                  if (context.mounted) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            FlightQRPageInterface(flight: flight),
+                      ),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purple[800],

@@ -1,6 +1,8 @@
 import 'package:airplane_management/core/constants/app_images.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../services/booking_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../services/auth_services.dart';
 import 'main_interface.dart';
@@ -42,6 +44,29 @@ class _UserProfileInterfaceState extends State<UserProfileInterface> {
               ),
             ),
             backgroundColor: Colors.purple[800],
+            actions: snapshot.hasData
+                ? [
+                    // Only show logout button when user is logged in
+                    IconButton(
+                      icon: const Icon(
+                        Icons.logout,
+                        color: Colors.white,
+                      ),
+                      onPressed: () async {
+                        await _authService.signOut();
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Logged out successfully'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        }
+                      },
+                      tooltip: 'Logout',
+                    ),
+                  ]
+                : null,
           ),
           body: snapshot.hasData ? _buildProfile() : _buildAuthForm(),
         );
@@ -52,7 +77,7 @@ class _UserProfileInterfaceState extends State<UserProfileInterface> {
   // Profile view for logged in users remains the same.
   Widget _buildProfile() {
     final user = FirebaseAuth.instance.currentUser;
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(20.0),
       child: Column(
         children: [
@@ -62,28 +87,23 @@ class _UserProfileInterfaceState extends State<UserProfileInterface> {
           ),
           const SizedBox(height: 20),
           Text(user?.displayName ?? 'User',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              style:
+                  const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
-          Text(user?.email ?? '', style: TextStyle(color: Colors.grey)),
+          Text(user?.email ?? '', style: const TextStyle(color: Colors.grey)),
           const SizedBox(height: 30),
-          ListTile(
-            leading: const Icon(Icons.history, color: Colors.purple),
-            title: const Text('Booking History'),
-            onTap: () {},
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Booking History',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
-          ListTile(
-            leading: const Icon(Icons.settings, color: Colors.purple),
-            title: const Text('Settings'),
-            onTap: () {},
-          ),
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text('Logout'),
-            onTap: () async {
-              await _authService.signOut();
-              setState(() => isLoggedIn = false);
-            },
-          ),
+          const SizedBox(height: 10),
+          _buildBookingHistory(),
         ],
       ),
     );
@@ -238,5 +258,75 @@ class _UserProfileInterfaceState extends State<UserProfileInterface> {
         ),
       );
     }
+  }
+
+  Widget _buildBookingHistory() {
+    final bookingService = BookingService();
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: bookingService.getBookingHistory(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(
+            child: Text('No booking history available'),
+          );
+        }
+
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: snapshot.data!.docs.length,
+          itemBuilder: (context, index) {
+            final booking =
+                snapshot.data!.docs[index].data() as Map<String, dynamic>;
+            final timestamp = booking['date'] as Timestamp?;
+            final date = timestamp?.toDate();
+
+            return Card(
+              margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              child: ListTile(
+                title: Text(
+                  '${booking['airline']} - ${booking['flightNumber']}',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('${booking['from']} → ${booking['to']}'),
+                    Text(
+                      'Date: ${date?.toString().split(' ')[0] ?? 'N/A'}',
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
+                trailing: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.purple[100],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    booking['status']?.toString().toUpperCase() ?? 'N/A',
+                    style: TextStyle(
+                      color: Colors.purple[800],
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }
